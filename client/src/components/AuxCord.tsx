@@ -12,7 +12,8 @@ import {
   Leaf,
   Database,
   ChevronRight,
-  Scroll
+  Scroll,
+  ArrowLeft
 } from "lucide-react";
 
 // --- THE ARCHIVE: Sourced from 'List of substances used in rituals' ---
@@ -181,6 +182,14 @@ const RITUAL_SUBSTANCES = [
     notes: "Root bark used in 'Vinho da Jurema'. Contains oral DMT (MAOI mechanism is debated)."
   },
   {
+    vernacularName: "Chili Pepper",
+    species: "Capsicum spp.",
+    phytochemicals: "Capsaicin",
+    effectClass: "Irritant / Endorphin Releaser",
+    regionCulture: "Pan-American",
+    notes: "Burned to ward off evil spirits or punish. High doses induce endorphin rush."
+  },
+  {
     vernacularName: "Bitter-grass",
     species: "Calea ternifolia",
     phytochemicals: "Sesquiterpene lactones",
@@ -288,6 +297,14 @@ const RITUAL_SUBSTANCES = [
     regionCulture: "Greece / Eleusinian Mysteries",
     notes: "Likely key ingredient in the Kykeon potion consumed at Eleusis."
   },
+  {
+    vernacularName: "Wine",
+    species: "Vitis vinifera",
+    phytochemicals: "Ethanol",
+    effectClass: "Intoxicant",
+    regionCulture: "Greece / Dionysian Mysteries",
+    notes: "Central to the cult of Dionysus. Induced maenadic trance and frenzy."
+  },
 
   // --- OCEANIA ---
   {
@@ -310,7 +327,7 @@ const RITUAL_SUBSTANCES = [
 
 export function AuxCord() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedItem, setSelectedItem] = useState<typeof RITUAL_SUBSTANCES[0]>(RITUAL_SUBSTANCES[0]); // Default to first item
+  const [selectedItem, setSelectedItem] = useState<typeof RITUAL_SUBSTANCES[0] | null>(null);
 
   // Filter logic
   const filteredItems = useMemo(() => {
@@ -339,19 +356,25 @@ export function AuxCord() {
               </span>
             </div>
             <p className="text-xs text-gray-400 font-mono tracking-widest uppercase mt-1">
-              Global Ethnopharmacology Database
+              {RITUAL_SUBSTANCES.length} ENTRIES LOADED FROM WIKI
             </p>
           </div>
         </div>
       </div>
 
       {/* --- MASTER-DETAIL LAYOUT --- */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         
         {/* --- LEFT PANEL: THE LIST --- */}
-        <div className="w-full md:w-1/3 border-r border-white/10 flex flex-col bg-black/20">
+        {/* Mobile: Full width if no item selected. Desktop: Always 1/3 width. */}
+        <div className={`
+          flex flex-col bg-black/20
+          transition-all duration-300
+          ${selectedItem ? 'hidden md:flex md:w-1/3 border-r border-white/10' : 'w-full'}
+          md:w-1/3 md:border-r md:border-white/10
+        `}>
           
-          {/* Quick Filter Input (Kept subtle for browsing utility) */}
+          {/* Quick Filter Input */}
           <div className="p-4 border-b border-white/5 bg-black/20">
              <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -368,7 +391,7 @@ export function AuxCord() {
           {/* Scrollable List */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {filteredItems.map((item, index) => {
-              const isActive = selectedItem.vernacularName === item.vernacularName;
+              const isActive = selectedItem?.vernacularName === item.vernacularName;
               return (
                 <button
                   key={index}
@@ -387,7 +410,7 @@ export function AuxCord() {
                       {item.species}
                     </span>
                   </div>
-                  {isActive && <ChevronRight className="w-4 h-4 text-[hsl(var(--neon-purple))]" />}
+                  <ChevronRight className={`w-4 h-4 transition-colors ${isActive ? "text-[hsl(var(--neon-purple))]" : "text-gray-600 group-hover:text-gray-400"}`} />
                 </button>
               );
             })}
@@ -402,77 +425,101 @@ export function AuxCord() {
         </div>
 
         {/* --- RIGHT PANEL: THE DETAILS --- */}
-        <div className="hidden md:flex flex-col w-2/3 bg-transparent overflow-y-auto custom-scrollbar p-6 md:p-8">
+        {/* Mobile: Full width if item selected. Desktop: Always 2/3 width. */}
+        <div className={`
+            flex-col bg-transparent overflow-y-auto custom-scrollbar p-6 md:p-8
+            transition-all duration-300
+            ${selectedItem ? 'flex w-full md:w-2/3' : 'hidden md:flex md:w-2/3'}
+        `}>
            <AnimatePresence mode="wait">
-            <motion.div
-              key={selectedItem.vernacularName}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-6 max-w-2xl mx-auto w-full"
-            >
-              {/* Title Card */}
-              <div className="bg-[hsl(var(--neon-purple)/0.05)] border border-[hsl(var(--neon-purple)/0.2)] p-6 rounded-xl relative overflow-hidden shadow-lg">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                  <Leaf className="w-40 h-40 text-[hsl(var(--neon-purple))]" />
-                </div>
-                <div className="relative z-10">
-                    <span className="inline-block px-2 py-1 bg-[hsl(var(--neon-purple)/0.2)] border border-[hsl(var(--neon-purple)/0.3)] rounded text-[10px] font-bold text-[hsl(var(--neon-purple))] uppercase tracking-widest mb-2">
-                        Ethnobotanical Record
-                    </span>
-                    <h2 className="text-4xl font-black text-white mb-2">{selectedItem.vernacularName}</h2>
-                    <p className="text-[hsl(var(--neon-purple))] font-mono italic text-lg">{selectedItem.species}</p>
-                </div>
-              </div>
+            {selectedItem ? (
+              <motion.div
+                key={selectedItem.vernacularName}
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                transition={{ duration: 0.2 }}
+                className="space-y-6 max-w-2xl mx-auto w-full"
+              >
+                {/* Mobile Back Button */}
+                <button 
+                    onClick={() => setSelectedItem(null)}
+                    className="md:hidden flex items-center gap-2 text-gray-400 hover:text-white mb-4"
+                >
+                    <ArrowLeft className="w-4 h-4" /> Back to List
+                </button>
 
-              {/* Data Grid */}
-              <div className="grid grid-cols-1 gap-4">
-                
-                {/* Region */}
-                <div className="bg-white/5 border border-white/10 p-5 rounded-xl flex items-center gap-4">
-                    <div className="p-3 bg-black/40 rounded-lg text-orange-400">
-                      <MapPin className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">Region & Culture</h3>
-                      <p className="text-white font-medium text-lg">{selectedItem.regionCulture}</p>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                    {/* Phytochemicals */}
-                    <div className="bg-white/5 border border-white/10 p-5 rounded-xl">
-                      <div className="p-2 bg-black/40 rounded-lg text-[hsl(var(--neon-cyan))] w-fit mb-3">
-                        <FlaskConical className="w-6 h-6" />
-                      </div>
-                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Active Compounds</h3>
-                      <p className="text-white font-medium leading-tight">{selectedItem.phytochemicals}</p>
-                    </div>
-
-                    {/* Effect Class */}
-                    <div className="bg-white/5 border border-white/10 p-5 rounded-xl">
-                      <div className="p-2 bg-black/40 rounded-lg text-[hsl(var(--neon-green))] w-fit mb-3">
-                        <BrainCircuit className="w-6 h-6" />
-                      </div>
-                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Effect Class</h3>
-                      <p className="text-white font-medium leading-tight">{selectedItem.effectClass}</p>
-                    </div>
-                </div>
-
-                {/* Notes */}
-                <div className="bg-black/30 border border-white/10 p-6 rounded-xl flex gap-5">
-                  <Info className="w-6 h-6 text-[hsl(var(--neon-purple))] shrink-0 mt-1" />
-                  <div>
-                    <h3 className="text-xs font-bold text-[hsl(var(--neon-purple))] uppercase tracking-wider mb-2">Historical Context</h3>
-                    <p className="text-gray-300 leading-relaxed text-sm">
-                      {selectedItem.notes}
-                    </p>
+                {/* Title Card */}
+                <div className="bg-[hsl(var(--neon-purple)/0.05)] border border-[hsl(var(--neon-purple)/0.2)] p-6 rounded-xl relative overflow-hidden shadow-lg">
+                  <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <Leaf className="w-40 h-40 text-[hsl(var(--neon-purple))]" />
+                  </div>
+                  <div className="relative z-10">
+                      <span className="inline-block px-2 py-1 bg-[hsl(var(--neon-purple)/0.2)] border border-[hsl(var(--neon-purple)/0.3)] rounded text-[10px] font-bold text-[hsl(var(--neon-purple))] uppercase tracking-widest mb-2">
+                          Ethnobotanical Record
+                      </span>
+                      <h2 className="text-3xl md:text-4xl font-black text-white mb-2">{selectedItem.vernacularName}</h2>
+                      <p className="text-[hsl(var(--neon-purple))] font-mono italic text-lg">{selectedItem.species}</p>
                   </div>
                 </div>
 
-              </div>
-            </motion.div>
+                {/* Data Grid */}
+                <div className="grid grid-cols-1 gap-4">
+                  
+                  {/* Region */}
+                  <div className="bg-white/5 border border-white/10 p-5 rounded-xl flex items-center gap-4">
+                      <div className="p-3 bg-black/40 rounded-lg text-orange-400">
+                        <MapPin className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-0.5">Region & Culture</h3>
+                        <p className="text-white font-medium text-lg">{selectedItem.regionCulture}</p>
+                      </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Phytochemicals */}
+                      <div className="bg-white/5 border border-white/10 p-5 rounded-xl">
+                        <div className="p-2 bg-black/40 rounded-lg text-[hsl(var(--neon-cyan))] w-fit mb-3">
+                          <FlaskConical className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Active Compounds</h3>
+                        <p className="text-white font-medium leading-tight">{selectedItem.phytochemicals}</p>
+                      </div>
+
+                      {/* Effect Class */}
+                      <div className="bg-white/5 border border-white/10 p-5 rounded-xl">
+                        <div className="p-2 bg-black/40 rounded-lg text-[hsl(var(--neon-green))] w-fit mb-3">
+                          <BrainCircuit className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Effect Class</h3>
+                        <p className="text-white font-medium leading-tight">{selectedItem.effectClass}</p>
+                      </div>
+                  </div>
+
+                  {/* Notes */}
+                  <div className="bg-black/30 border border-white/10 p-6 rounded-xl flex gap-5">
+                    <Info className="w-6 h-6 text-[hsl(var(--neon-purple))] shrink-0 mt-1" />
+                    <div>
+                      <h3 className="text-xs font-bold text-[hsl(var(--neon-purple))] uppercase tracking-wider mb-2">Historical Context</h3>
+                      <p className="text-gray-300 leading-relaxed text-sm">
+                        {selectedItem.notes}
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
+              </motion.div>
+            ) : (
+                // DESKTOP EMPTY STATE
+                <div className="hidden md:flex h-full flex-col items-center justify-center text-center opacity-40">
+                  <Sprout className="w-24 h-24 mb-6 text-gray-600 animate-pulse-slow" />
+                  <h3 className="text-xl font-bold text-gray-300">Select a Record</h3>
+                  <p className="text-sm text-gray-500 max-w-xs mt-2">
+                    Choose a substance from the list on the left to view its ethnopharmacological profile.
+                  </p>
+                </div>
+            )}
            </AnimatePresence>
         </div>
 
