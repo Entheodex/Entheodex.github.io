@@ -439,7 +439,7 @@ export function AuxCord() {
             <Database className="w-8 h-8 text-[hsl(var(--neon-purple))]" />
           </div>
           <div>
-            <div className="flex items-center gap-2 text-3xl font-black tracking-tighter text-white">
+            <div className="flex items-center gap-2 text-2xl font-black tracking-tighter text-white">
               {/* @ts-ignore */}
               <MeltText text="RITUAL" />
               <span className="text-[hsl(var(--neon-cyan))]">
