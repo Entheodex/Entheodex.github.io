@@ -416,6 +416,77 @@ const RITUAL_SUBSTANCES = [
   }
 ];
 
+const IntricateMandala = () => (
+  <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-70 overflow-hidden z-0">
+    <div 
+      className="absolute w-[300%] h-[300%] opacity-50 mix-blend-overlay animate-[spin_120s_linear_infinite]"
+      style={{ 
+        backgroundImage: "radial-gradient(circle, hsl(var(--neon-purple)) 2px, transparent 2px)", 
+        backgroundSize: "40px 40px" 
+      }}
+    />
+    <div 
+      className="absolute w-[300%] h-[300%] opacity-50 mix-blend-overlay animate-[spin_180s_linear_infinite_reverse]"
+      style={{ 
+        backgroundImage: "radial-gradient(circle, hsl(var(--neon-green)) 2px, transparent 2px)", 
+        backgroundSize: "35px 35px" 
+      }}
+    />
+
+    {[...Array(6)].map((_, i) => (
+      <div
+        key={`spiro-${i}`}
+        className="absolute border border-[hsl(var(--neon-purple))] opacity-60 mix-blend-screen animate-[spin_60s_linear_infinite]"
+        style={{ 
+            width: "400px", 
+            height: "100px", 
+            borderRadius: "50%", 
+            borderWidth: "1px",
+            animationDelay: `-${i * 5}s`,
+            transform: `rotate(${i * 30}deg)`
+        }}
+      />
+    ))}
+
+    {[...Array(6)].map((_, i) => (
+      <div
+        key={`tunnel-${i}`}
+        className="absolute border-2 border-[hsl(var(--neon-green))] rounded-full"
+        style={{ 
+            width: "50px", 
+            height: "50px", 
+            opacity: 0.3,
+            animation: "tunnel-zoom 8s linear infinite",
+            animationDelay: `${i * 1.3}s`
+        }}
+      />
+    ))}
+
+    <div className="absolute w-[300px] h-[300px] mix-blend-screen opacity-60">
+       <div 
+         className="absolute inset-0 border-2 border-[hsl(var(--neon-green))]"
+         style={{ 
+           clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)",
+           animation: "pulse-spin 10s linear infinite"
+         }}
+       />
+    </div>
+
+    <style>{`
+      @keyframes tunnel-zoom {
+        0% { transform: scale(0) rotate(0deg); opacity: 0.3; }
+        50% { opacity: 0.8; }
+        100% { transform: scale(15) rotate(90deg); opacity: 0.2; }
+      }
+      @keyframes pulse-spin {
+        0% { transform: scale(1) rotate(0deg); opacity: 0.6; }
+        50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
+        100% { transform: scale(1) rotate(360deg); opacity: 0.6; }
+      }
+    `}</style>
+  </div>
+);
+
 export function AuxCord() {
   const [selectedItem, setSelectedItem] = useState<typeof RITUAL_SUBSTANCES[0] | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
